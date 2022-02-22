@@ -1,22 +1,26 @@
-from django.shortcuts import render
+from .serializers import RegisterSerializer
+from rest_framework.permissions import AllowAny
+from rest_framework import generics
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.response import Response
+from django.contrib.auth.models import User
 
-# Create your views here.
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ("id", "username", "password", "email", "first_name", "last_name")
-        write_only_fields = ("password",)
-        read_only_fields = ("id",)
+from api.models import Project
+from api.serializers import ProjectSerializer
 
-    def create(self, validated_data):
-        user = User.objects.create(
-            username=validated_data["username"],
-            email=validated_data["email"],
-            first_name=validated_data["first_name"],
-            last_name=validated_data["last_name"],
-        )
 
-        user.set_password(validated_data["password"])
-        user.save()
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = RegisterSerializer
 
-        return user
+
+class ProjectViewSet(ModelViewSet):
+    serializer_class = ProjectSerializer
+
+    def get_queryset(self):
+        queryset = Project.objects.filter(active=True)
+        id = self.request.GET.get("id")
+        if id is not None:
+            queryset = queryset.filter(id=id)
+        return queryset
