@@ -32,9 +32,24 @@ class RegisterSerializer(serializers.ModelSerializer):
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        field = (
-            "title",
-            "description",
-            "type",
-            "contributor_id",
+        fields = "__all__"
+
+    def create(self, validated_data):
+        return super().create(validated_data)
+
+
+class ContributorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contributor
+        fields = "__all__"
+
+    def create(self, validated_data):
+        contributor = Contributor.objects.create(
+            permission=validated_data["permission"],
+            role=validated_data["role"],
         )
+        contributor.user_id(self.request.user)
+        contributor.project_id(self.request.GET.get("projects_id"))
+        contributor.save()
+
+        return contributor
