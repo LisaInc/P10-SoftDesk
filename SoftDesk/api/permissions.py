@@ -1,8 +1,9 @@
 from rest_framework.permissions import BasePermission
+from .models import Contributor
 
 
-class IsAdminAuthenticated(BasePermission):
-    def has_permission(self, request, view):
+class UserPermission(BasePermission):
+    def is_author(self, project, user):
         return bool(
-            request.user and request.user.is_authenticated and request.user.is_superuser
+            len(queryset=Contributor.objects.filter(project=project, user=user))
         )

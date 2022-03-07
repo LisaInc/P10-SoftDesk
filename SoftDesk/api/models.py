@@ -15,8 +15,8 @@ class Project(models.Model):
 
 
 class Contributor(models.Model):
-    PERMISSIONS = [("autor", "Autor"), ("contributor", "Contributor")]
-    user_id = models.ForeignKey(to=User, on_delete=models.CASCADE)
-    project_id = models.ForeignKey("api.Project", on_delete=models.CASCADE)
+    PERMISSIONS = [("author", "author"), ("contributor", "Contributor")]
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    project = models.ForeignKey("api.Project", on_delete=models.CASCADE)
     permission = models.CharField(max_length=255, choices=PERMISSIONS)
     role = models.CharField(max_length=255)

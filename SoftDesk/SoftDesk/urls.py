@@ -10,13 +10,12 @@ router = routers.SimpleRouter()
 router.register("projects", ProjectViewSet, basename="projects")
 
 projects_router = routers.NestedSimpleRouter(router, "projects", lookup="projects")
-projects_router.register("user", ContributorViewSet, basename="user")
+projects_router.register("users", ContributorViewSet, basename="users")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api-auth/", include("rest_framework.urls")),
-    path("api/login/", TokenObtainPairView.as_view(), name="obtain_tokens"),
+    path("login/", TokenObtainPairView.as_view(), name="obtain_tokens"),
     path("signup/", RegisterView.as_view(), name="auth_register"),
-    path("api/", include(router.urls)),
-    path("api/", include(projects_router.urls)),
+    path("", include(router.urls)),
+    path("", include(projects_router.urls)),
 ]
