@@ -1,7 +1,7 @@
 from dataclasses import field
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from api.models import Project, Contributor
+from api.models import Project, Contributor, Issue, Comment
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -38,4 +38,16 @@ class ProjectSerializer(serializers.ModelSerializer):
 class ContributorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contributor
+        fields = "__all__"
+
+
+class IssueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Issue
+        fields = "__all__"
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
         fields = "__all__"
