@@ -1,4 +1,3 @@
-from xml.etree.ElementTree import Comment
 from .serializers import RegisterSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework import generics
@@ -54,14 +53,15 @@ class ProjectViewSet(ModelViewSet):
         if view.action == "create":
             return True
         if view.action in ("destroy", "update"):
-            return UserPermission.is_author(view.kwargs["pk"], request.user)
-        return UserPermission.is_contributor(
+            return UserPermission.is_project_author(view.kwargs["pk"], request.user)
+        return UserPermission.is_project_author_or_contributor(
             request.user, view.kwargs["pk"]
-        ) or UserPermission.is_author(view.kwargs["pk"], request.user)
+        )
 
 
 class ContributorViewSet(ModelViewSet):
     serializer_class = ContributorSerializer
+    permission_classes = [IsAuthenticated]
     http_method_names = ["get", "post", "delete"]
 
     def get_queryset(self):
@@ -75,18 +75,18 @@ class ContributorViewSet(ModelViewSet):
 
     def has_permission(self, request, view):
         if view.action in ("create", "destroy"):
-            return UserPermission.is_author(view.kwargs["pk"], request.user)
-        return UserPermission.is_contributor(
+            return UserPermission.is_project_author(view.kwargs["pk"], request.user)
+        return UserPermission.is_project_author_or_contributor(
             request.user, view.kwargs["pk"]
-        ) or UserPermission.is_author(view.kwargs["pk"], request.user)
+        )
 
 
 class IssueViewSet(ModelViewSet):
     serializer_class = IssueSerializer
+    permission_classes = [IsAuthenticated]
     http_method_names = ["get", "post", "put", "delete"]
 
     def get_queryset(self):
-        # A finir
         queryset = Issue.objects.filter(project=self.kwargs["projects_pk"])
         id = self.request.GET.get("id")
         if id is not None:
@@ -110,9 +110,17 @@ class IssueViewSet(ModelViewSet):
         request.POST._mutable = False
         return super(IssueViewSet, self).update(request, *args, **kwargs)
 
+    def has_permission(self, request, view):
+        if view.action in ("destroy", "update"):
+            return UserPermission.is_issue_author(view.kwargs["pk"], request.user)
+        return UserPermission.is_project_author_or_contributor(
+            self.kwargs["projects_pk"], request.user
+        )
+
 
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
     http_method_names = ["get", "post", "put", "delete"]
 
     def get_queryset(self):
@@ -138,10 +146,8 @@ class CommentViewSet(ModelViewSet):
         return super(CommentViewSet, self).update(request, *args, **kwargs)
 
     def has_permission(self, request, view):
-        if view.action == "create":
-            return True
         if view.action in ("destroy", "update"):
-            return UserPermission.is_author(view.kwargs["pk"], request.user)
-        return UserPermission.is_contributor(
-            request.user, view.kwargs["pk"]
-        ) or UserPermission.is_author(view.kwargs["pk"], request.user)
+            return UserPermission.is_comment_author(view.kwargs["pk"], request.user)
+        return UserPermission.is_project_author_or_contributor(
+            self.kwargs["projects_pk"], request.user
+        )
